@@ -34,7 +34,7 @@ const getPlaylistSongs = async () => {
 			}
 		})
 		const data = await response.json()
-		return data.items.map(item => ({name: item.track.name, url: item.track.external_urls.spotify}))
+		return data.items.map(item => ({name: item.track.name, artist: item.track.artists[0].name, url: item.track.external_urls.spotify}))
 	} catch (error) {
 		console.error('Error getting liked songs:', error)
 		throw error
