@@ -24,29 +24,39 @@ const getToken = async () => {
 	}
 }
 
-const getPlaylistSongs = async () => {
+const getRandomSong = async () => {
 	try {
 		const accessToken = await getToken()
-		const response = await fetch(`https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks`, {
+
+		// Gets the total number of songs
+		const totalSongsResponse = await fetch(`https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?limit=1`, {
+			method: 'GET',
+			headers: {
+				Authorization: 'Bearer ' + accessToken
+			}
+		})
+		const totalSongs = (await totalSongsResponse.json()).total
+
+		// Calculates a random offset for the API request
+		const randomOffset = Math.floor(Math.random() * totalSongs)
+
+		// Gets a random song with the calculated offset
+		const response = await fetch(`https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?limit=1&offset=${randomOffset}`, {
 			method: 'GET',
 			headers: {
 				Authorization: 'Bearer ' + accessToken
 			}
 		})
 		const data = await response.json()
-		return data.items.map(item => ({name: item.track.name, artist: item.track.artists[0].name, url: item.track.external_urls.spotify}))
-	} catch (error) {
-		console.error('Error getting liked songs:', error)
-		throw error
-	}
-}
+		const song = data.items[0].track
 
-const getRandomSong = async () => {
-	try {
-		const playlistSongs = await getPlaylistSongs()
-		return playlistSongs[Math.floor(Math.random() * playlistSongs.length)]
+		return {
+			name: song.name,
+			artist: song.artists[0].name,
+			url: song.external_urls.spotify
+		}
 	} catch (error) {
-		console.error('Error getting random song:', error)
+		console.error('Error requesting random song:', error)
 		throw error
 	}
 }
